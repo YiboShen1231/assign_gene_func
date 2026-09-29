@@ -141,7 +141,78 @@ def local_alignment(seq1, seq2, scoring_function):
     Other alignments are not possible.
 
     """
-    raise NotImplementedError()
+    
+    n = len(seq1)
+    m = len(seq2)
+
+    scores = [[0.0] * (m + 1) for _ in range(n + 1)]
+    trace = [[None] * (m + 1) for _ in range(n + 1)]
+
+    best_score = 0.0
+    best_pos = (0, 0)
+
+    for i in range(1, n + 1):
+        for j in range(1, m + 1):
+
+            diagonal = scores[i - 1][j - 1] + scoring_function(
+                seq1[i - 1], seq2[j - 1]
+            )
+
+            up = scores[i - 1][j] + scoring_function(
+                seq1[i - 1], "-"
+            )
+
+            left = scores[i][j - 1] + scoring_function(
+                "-", seq2[j - 1]
+            )
+
+            current_score = max(0, diagonal, up, left)
+            scores[i][j] = current_score
+
+            if current_score == 0:
+                trace[i][j] = None
+            elif current_score == diagonal:
+                trace[i][j] = "D"
+            elif current_score == up:
+                trace[i][j] = "U"
+            else:
+                trace[i][j] = "L"
+
+            if current_score > best_score:
+                best_score = current_score
+                best_pos = (i, j)
+
+
+    i, j = best_pos
+
+    aligned_seq1 = []
+    aligned_seq2 = []
+
+    while i > 0 and j > 0 and scores[i][j] > 0:
+
+        if trace[i][j] == "D":
+            aligned_seq1.append(seq1[i - 1])
+            aligned_seq2.append(seq2[j - 1])
+            i -= 1
+            j -= 1
+
+        elif trace[i][j] == "U":
+            aligned_seq1.append(seq1[i - 1])
+            aligned_seq2.append("-")
+            i -= 1
+
+        elif trace[i][j] == "L":
+            aligned_seq1.append("-")
+            aligned_seq2.append(seq2[j - 1])
+            j -= 1
+
+        else:
+            break
+
+    aligned_seq1 = "".join(reversed(aligned_seq1))
+    aligned_seq2 = "".join(reversed(aligned_seq2))
+
+    return aligned_seq1, aligned_seq2, float(best_score)
 
 
 ## This is an example scoring function, you should implement a version which uses a scoring matrix 
