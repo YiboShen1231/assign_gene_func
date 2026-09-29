@@ -148,3 +148,12 @@ def local_alignment(seq1, seq2, scoring_function):
 def scoring_function_simple(aa_i,aa_j):
     score = [-1, 1][aa_i == aa_j]
     return (score)
+
+from Bio.Align import substitution_matrices
+
+blosum62 = substitution_matrices.load("BLOSUM62")
+
+def scoring_function_blosum62(aa_i, aa_j):
+    if aa_i == "-" or aa_j == "-":
+        return -4
+    return blosum62[aa_i, aa_j]
